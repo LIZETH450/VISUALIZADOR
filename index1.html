@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador del Ciclo del Agua</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    #simContainer {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    #canvasWrapper {
+      flex: 2 1 600px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+    }
+    #simCanvas {
+      width: 100%;
+      height: auto;
+      background: linear-gradient(#87CEEB, #b3d9ff 60%, #4da6ff 60%, #0066cc);
+      border: 1px solid #999;
+    }
+    #controlPanel {
+      flex: 1 1 250px;
+      background: #f4f4f4;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    button, select, label {
+      display: block;
+      margin: 8px 0;
+    }
+    @media (max-width: 768px) {
+      #simContainer {
+        flex-direction: column;
+      }
+      #controlPanel {
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center;">Simulador del Ciclo del Agua</h1>
+
+  <div id="simContainer">
+    <div id="controlPanel">
+      <h2>Controles</h2>
+      <label>Intensidad Solar <span id="sunVal">50</span>%</label>
+      <input type="range" id="sunRange" min="0" max="100" value="50">
+
+      <button id="tempToggle">Temperatura: Cálido</button>
+
+      <label>Dirección del viento</label>
+      <select id="windDirSelect">
+        <option value="E">Este</option>
+        <option value="W">Oeste</option>
+        <option value="N">Norte</option>
+        <option value="S">Sur</option>
+      </select>
+
+      <label>Velocidad del viento <span id="windVal">3</span></label>
+      <input type="range" id="windSpeedRange" min="0" max="10" value="3">
+
+      <button id="vegToggle">Vegetación: Activada</button>
+      <button id="labelToggle">Ocultar Etiquetas</button>
+
+      <label>Velocidad de simulación</label>
+      <select id="speedSelect">
+        <option value="0.5">Lenta</option>
+        <option value="1" selected>Normal</option>
+        <option value="2">Rápida</option>
+      </select>
+
+      <button id="soundToggle">Sonido: Off</button>
+      <hr>
+      <div id="questions">
+        <h3>Preguntas guía</h3>
+        <ol>
+          <li>¿Qué pasa si aumentamos el sol?</li>
+          <li>¿Cómo cambia la lluvia si hace frío?</li>
+          <li>¿Qué ocurre si no hay vegetación?</li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="canvasWrapper">
+      <canvas id="simCanvas" width="800" height="500"></canvas>
+    </div>
+  </div>
+
+  <footer style="text-align:center;padding:5px;">Tiempo de simulación: <span id="timeCounter">0</span> h</footer>
+
+  <!-- Audio opcional: coloca los archivos rain.mp3 y wind.mp3 en la misma carpeta -->
+  <audio id="rainSound" loop src="rain.mp3"></audio>
+  <audio id="windSound" loop src="wind.mp3"></audio>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = canvas.width;
+    let height = canvas.height;
+
+    // Ajuste responsivo
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+    });
+    function resizeCanvas() {
+      const ratio = width / height;
+      const avail = document.getElementById('canvasWrapper').clientWidth;
+      canvas.width = avail;
+      canvas.height = avail / ratio;
+    }
+    resizeCanvas();
+
+    // Variables de simulación
+    let sunIntensity = 50; // 0–100
+    let isWarm = true;
+    let windDir = 'E';
+    let windSpeed = 3; // 0–10
+    let vegOn = true;
+    let labelsOn = true;
+    let simSpeed = 1; // 0.5, 1, 2
+    let timeCounter = 0;
+    let lastFrame = performance.now();
+
+    const particles = [];
+    const maxParticles = 400;
+
+    // --------------------------------
+    // Funciones de partículas
+    // --------------------------------
+    function addEvapParticles() {
+      let rate = Math.floor(sunIntensity / 10);
+      for (let i = 0; i < rate; i++) {
+        particles.push({
+          x: Math.random() * width * 0.3,
+          y: height * 0.65 + Math.random() * 20,
+          vx: (windDir === 'E' ? 1 : -1) * windSpeed * 0.1,
+          vy: -Math.random() * 1.5 - 1,
+          type: 'vap',
+          alpha: 1
+        });
+      }
+      // Transpiración
+      if (vegOn) {
+        for (let i = 0; i < Math.floor(sunIntensity / 20); i++) {
+          particles.push({
+            x: width * 0.5 + Math.random() * width * 0.2,
+            y: height * 0.6 + Math.random() * 30,
+            vx: (windDir === 'E' ? 1 : -1) * windSpeed * 0.1,
+            vy: -Math.random() * 1.0 - 0.5,
+            type: 'vap',
+            alpha: 1
+          });
+        }
+      }
+    }
+
+    function updateParticles(dt) {
+      for (let p of particles) {
+        p.x += p.vx * dt * simSpeed;
+        p.y += p.vy * dt * simSpeed;
+
+        // De vapor a nube
+        if (p.type === 'vap' && p.y < height * 0.25) {
+          p.type = 'cloud';
+          p.vx = windDir === 'E' ? windSpeed * 0.1 : -windSpeed * 0.1;
+          p.vy = 0;
+        }
+        // Precipitación
+        if (p.type === 'cloud' && Math.random() < 0.002 * sunIntensity) {
+          particles.push({
+            x: p.x,
+            y: p.y,
+            vx: (windDir === 'E' ? 1 : -1) * windSpeed * 0.05,
+            vy: isWarm ? 1.5 : 1,
+            type: isWarm ? 'rain' : 'snow',
+            alpha: 1
+          });
+        }
+        // Gravedad en lluvia/nieve
+        if (p.type === 'rain' || p.type === 'snow') {
+          p.vy += 0.05 * dt * simSpeed;
+        }
+        // Desvanecimiento
+        p.alpha -= 0.0005 * dt * simSpeed;
+      }
+      // Limitar cantidad
+      while (particles.length > maxParticles) {
+        particles.shift();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Océano/lago
+      ctx.fillStyle = '#1e90ff';
+      ctx.fillRect(0, height * 0.65, width * 0.4, height * 0.35);
+
+      // Montañas
+      ctx.fillStyle = '#8B7D7B';
+      ctx.beginPath();
+      ctx.moveTo(width * 0.4, height * 0.65);
+      ctx.lineTo(width * 0.55, height * 0.35);
+      ctx.lineTo(width * 0.7, height * 0.65);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(width * 0.6, height * 0.65);
+      ctx.lineTo(width * 0.75, height * 0.4);
+      ctx.lineTo(width * 0.9, height * 0.65);
+      ctx.closePath();
+      ctx.fill();
+      // Nieve en picos si está frío
+      if (!isWarm) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(width * 0.55, height * 0.35, width * 0.15, 10);
+        ctx.fillRect(width * 0.75, height * 0.4, width * 0.15, 10);
+      }
+
+      // Sol
+      ctx.fillStyle = 'yellow';
+      ctx.beginPath();
+      ctx.arc(width * 0.1, height * 0.15, 40, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Vegetación
+      if (vegOn) {
+        ctx.fillStyle = '#228B22';
+        ctx.fillRect(width * 0.45, height * 0.6, width * 0.25, 60);
+      }
+
+      // Ríos
+      ctx.strokeStyle = '#1e90ff';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(width * 0.7, height * 0.65);
+      ctx.bezierCurveTo(width * 0.6, height * 0.8, width * 0.5, height * 0.9, width * 0.4, height * 0.99);
+      ctx.stroke();
+
+      // Partículas
+      for (let p of particles) {
+        ctx.globalAlpha = Math.max(p.alpha, 0);
+        switch (p.type) {
+          case 'vap':
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillRect(p.x, p.y, 2, 6);
+            break;
+          case 'cloud':
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          case 'rain':
+            ctx.strokeStyle = 'rgba(173,216,230,0.8)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x, p.y + 10);
+            ctx.stroke();
+            break;
+          case 'snow':
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // Etiquetas
+      if (labelsOn) {
+        ctx.fillStyle = 'black';
+        ctx.font = '14px sans-serif';
+        ctx.fillText('Sol', width * 0.1 - 15, height * 0.15 - 45);
+        ctx.fillText('Océano', width * 0.05, height * 0.9);
+        ctx.fillText('Montañas', width * 0.55, height * 0.35 - 10);
+        ctx.fillText('Río', width * 0.5, height * 0.95);
+        if (vegOn) ctx.fillText('Vegetación', width * 0.55, height * 0.58);
+      }
+    }
+
+    function loop(timestamp) {
+      let dt = timestamp - lastFrame;
+      lastFrame = timestamp;
+
+      addEvapParticles();
+      updateParticles(dt / 16);
+      draw();
+
+      timeCounter += dt / 1000 * simSpeed;
+      document.getElementById('timeCounter').textContent = Math.floor(timeCounter);
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // -----------------------------
+    // Controles
+    // -----------------------------
+    document.getElementById('sunRange').addEventListener('input', e => {
+      sunIntensity = parseInt(e.target.value);
+      document.getElementById('sunVal').textContent = sunIntensity;
+    });
+
+    document.getElementById('tempToggle').addEventListener('click', e => {
+      isWarm = !isWarm;
+      e.target.textContent = 'Temperatura: ' + (isWarm ? 'Cálido' : 'Frío');
+    });
+
+    document.getElementById('windDirSelect').addEventListener('change', e => {
+      windDir = e.target.value;
+    });
+
+    document.getElementById('windSpeedRange').addEventListener('input', e => {
+      windSpeed = parseInt(e.target.value);
+      document.getElementById('windVal').textContent = windSpeed;
+    });
+
+    document.getElementById('vegToggle').addEventListener('click', e => {
+      vegOn = !vegOn;
+      e.target.textContent = 'Vegetación: ' + (vegOn ? 'Activada' : 'Desactivada');
+    });
+
+    document.getElementById('labelToggle').addEventListener('click', e => {
+      labelsOn = !labelsOn;
+      e.target.textContent = (labelsOn ? 'Ocultar' : 'Mostrar') + ' Etiquetas';
+    });
+
+    document.getElementById('speedSelect').addEventListener('change', e => {
+      simSpeed = parseFloat(e.target.value);
+    });
+
+    let soundOn = false;
+    document.getElementById('soundToggle').addEventListener('click', e => {
+      soundOn = !soundOn;
+      e.target.textContent = 'Sonido: ' + (soundOn ? 'On' : 'Off');
+      const rain = document.getElementById('rainSound');
+      const wind = document.getElementById('windSound');
+      if (soundOn) {
+        rain.play();
+        wind.play();
+      } else {
+        rain.pause();
+        wind.pause();
+      }
+    });
+
+    // Explicación por clic en canvas
+    canvas.addEventListener('click', e => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      let msg = '';
+      if (my > height * 0.65) {
+        msg = 'Evaporación: El agua se convierte en vapor debido al calor del sol.';
+      } else if (my < height * 0.25) {
+        msg = 'Condensación: El vapor forma nubes al enfriarse.';
+      } else if (my > height * 0.25 && my < height * 0.35) {
+        msg = 'Precipitación: El agua cae a la tierra como lluvia o nieve.';
+      } else if (mx > width * 0.45 && my > height * 0.6 && vegOn) {
+        msg = 'Transpiración: Las plantas liberan vapor de agua al aire.';
+      } else if (mx > width * 0.6 && my > height * 0.35 && my < height * 0.65) {
+        msg = 'Escorrentía: El agua fluye por los ríos hacia el océano.';
+      }
+      if (msg) {
+        alert(msg);
+      }
+    });
+  </script>
+</body>
+</html>
