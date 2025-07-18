@@ -1,0 +1,310 @@
+<!-- Sumando Fracciones Paso a Paso: archivo autocontenido -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sumando Fracciones Paso a Paso</title>
+  <style>
+    :root {
+      --primary: #0089d0;
+      --accent: #ffb703;
+      --bg: #f1f7fb;
+      --bar-color1: #8ecae6;
+      --bar-color2: #219ebc;
+      --bar-sum: #ffc75f;
+    }
+
+    body {
+      font-family: "Trebuchet MS", sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      background: var(--primary);
+      color: #fff;
+      width: 100%;
+      padding: 10px 0;
+      margin: 0;
+      text-align: center;
+    }
+
+    #app {
+      max-width: 800px;
+      width: 95%;
+      background: #fff;
+      margin: 20px auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    #visual {
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Barras fraccionarias */
+    .bar {
+      display: flex;
+      width: 320px;
+      height: 40px;
+      border: 2px solid #444;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 6px 0;
+    }
+
+    .segment {
+      flex: 1 1 auto;
+      height: 100%;
+    }
+
+    /* Controles */
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    #explanation {
+      background: #eef6ff;
+      border-left: 6px solid var(--primary);
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+    }
+
+    #speedControl {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    input[type="range"] {
+      accent-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <h1>🟢 Sumando Fracciones Paso a Paso</h1>
+  <div id="app">
+    <div id="visual"></div>
+
+    <div id="explanation">Haz clic en <strong>"Nuevo problema"</strong> para comenzar.</div>
+
+    <div id="controls">
+      <button id="newProblem">🔄 Nuevo problema</button>
+      <button id="prevStep" disabled>⏮️ Paso anterior</button>
+      <button id="nextStep" disabled>⏭️ Paso siguiente</button>
+      <button id="viewAll" disabled>▶️ Ver proceso completo</button>
+    </div>
+
+    <div id="speedControl">
+      <label for="speed">Velocidad animación</label>
+      <input type="range" id="speed" min="0.5" max="2" step="0.25" value="1" />
+    </div>
+  </div>
+
+  <script>
+    const visual = document.getElementById("visual");
+    const explanation = document.getElementById("explanation");
+    const btnNew = document.getElementById("newProblem");
+    const btnPrev = document.getElementById("prevStep");
+    const btnNext = document.getElementById("nextStep");
+    const btnView = document.getElementById("viewAll");
+    const speedSlider = document.getElementById("speed");
+
+    let problem = {};
+    let step = 0;
+    const MAX_STEP = 5;
+
+    const colors = ["var(--bar-color1)", "var(--bar-color2)"];
+
+    function gcd(a, b) {
+      return b === 0 ? a : gcd(b, a % b);
+    }
+
+    function lcm(a, b) {
+      return (a * b) / gcd(a, b);
+    }
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function createBar(numerator, denominator, color) {
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      for (let i = 0; i < denominator; i++) {
+        const seg = document.createElement("div");
+        seg.className = "segment";
+        seg.style.background = i < numerator ? color : "#eee";
+        bar.appendChild(seg);
+      }
+      return bar;
+    }
+
+    function generateProblem() {
+      let denom1, denom2, num1, num2;
+      do {
+        denom1 = randInt(2, 9);
+        denom2 = randInt(2, 9);
+      } while (denom1 === denom2);
+      num1 = randInt(1, denom1 - 1);
+      num2 = randInt(1, denom2 - 1);
+      problem = {
+        num1,
+        denom1,
+        num2,
+        denom2,
+        lcd: lcm(denom1, denom2),
+      };
+      problem.eqNum1 = (problem.lcd / denom1) * num1;
+      problem.eqNum2 = (problem.lcd / denom2) * num2;
+      problem.sumNum = problem.eqNum1 + problem.eqNum2;
+      const simpl = gcd(problem.sumNum, problem.lcd);
+      problem.simpNum = problem.sumNum / simpl;
+      problem.simpDen = problem.lcd / simpl;
+      step = 0;
+      updateButtons();
+      render();
+    }
+
+    function updateButtons() {
+      btnPrev.disabled = step === 0;
+      btnNext.disabled = step >= MAX_STEP;
+      btnView.disabled = step >= MAX_STEP;
+    }
+
+    function render() {
+      visual.innerHTML = "";
+      let colorSum = "var(--bar-sum)";
+
+      switch (step) {
+        case 0: // Paso 1: mostrar fracciones originales
+          explanation.innerHTML =
+            `<strong>Paso 1:</strong> Observa las fracciones originales.`;
+          visual.appendChild(createBar(problem.num1, problem.denom1, colors[0]));
+          visual.appendChild(createBar(problem.num2, problem.denom2, colors[1]));
+          break;
+
+        case 1: // Paso 2: encontrar denominador común
+          explanation.innerHTML =
+            `<strong>Paso 2:</strong> Buscamos el denominador común mínimo (m.c.m) de ${problem.denom1} y ${problem.denom2}: <strong>${problem.lcd}</strong>.`;
+          visual.appendChild(createBar(problem.num1, problem.denom1, colors[0]));
+          visual.appendChild(createBar(problem.num2, problem.denom2, colors[1]));
+          break;
+
+        case 2: // Paso 3: convertir a denominador común
+          explanation.innerHTML =
+            `<strong>Paso 3:</strong> Convertimos a denominador común.<br>` +
+            `${problem.num1}/${problem.denom1} → ${problem.eqNum1}/${problem.lcd}<br>` +
+            `${problem.num2}/${problem.denom2} → ${problem.eqNum2}/${problem.lcd}`;
+          visual.appendChild(createBar(problem.eqNum1, problem.lcd, colors[0]));
+          visual.appendChild(createBar(problem.eqNum2, problem.lcd, colors[1]));
+          break;
+
+        case 3: // Paso 4: sumar numeradores
+          explanation.innerHTML =
+            `<strong>Paso 4:</strong> Sumamos los numeradores y mantenemos el denominador:<br>` +
+            `${problem.eqNum1} + ${problem.eqNum2} = <strong>${problem.sumNum}</strong><br>` +
+            `Resultado provisional: ${problem.sumNum}/${problem.lcd}`;
+          visual.appendChild(createBar(problem.sumNum, problem.lcd, colorSum));
+          break;
+
+        case 4: // Paso 5: simplificar
+          explanation.innerHTML =
+            `<strong>Paso 5:</strong> Simplificamos la fracción.<br>` +
+            `Dividimos numerador y denominador entre su MCD (${gcd(problem.sumNum, problem.lcd)}).<br>` +
+            `Resultado final: <span style="font-size:1.3rem; color:var(--primary);">${problem.simpNum}/${problem.simpDen}</span>`;
+          visual.appendChild(createBar(problem.simpNum, problem.simpDen, colorSum));
+          break;
+
+        case 5: // Feedback
+          explanation.innerHTML =
+            `✅ <strong>¡Excelente!</strong> Has completado el proceso. ¡Sigue practicando!`;
+          visual.appendChild(createBar(problem.simpNum, problem.simpDen, colorSum));
+          break;
+
+        default:
+          break;
+      }
+      updateButtons();
+    }
+
+    btnNew.addEventListener("click", () => {
+      generateProblem();
+      btnNext.disabled = false;
+      btnView.disabled = false;
+    });
+
+    btnNext.addEventListener("click", () => {
+      if (step < MAX_STEP) {
+        step++;
+        render();
+      }
+    });
+
+    btnPrev.addEventListener("click", () => {
+      if (step > 0) {
+        step--;
+        render();
+      }
+    });
+
+    function playStepsFast(current) {
+      if (current > MAX_STEP) return;
+      step = current;
+      render();
+      if (current < MAX_STEP) {
+        setTimeout(
+          () => playStepsFast(current + 1),
+          1200 / parseFloat(speedSlider.value)
+        );
+      }
+    }
+
+    btnView.addEventListener("click", () => {
+      playStepsFast(step + 1);
+    });
+
+    speedSlider.addEventListener("input", () => {
+      // Speed affects animations only when playing all
+    });
+  </script>
+</body>
+</html>
