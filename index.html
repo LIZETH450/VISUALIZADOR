@@ -1,310 +1,830 @@
-<!-- Sumando Fracciones Paso a Paso: archivo autocontenido -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sumando Fracciones Paso a Paso</title>
-  <style>
-    :root {
-      --primary: #0089d0;
-      --accent: #ffb703;
-      --bg: #f1f7fb;
-      --bar-color1: #8ecae6;
-      --bar-color2: #219ebc;
-      --bar-sum: #ffc75f;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Aventura con Fracciones! 🎯</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      font-family: "Trebuchet MS", sans-serif;
-      background: var(--bg);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
 
-    h1 {
-      background: var(--primary);
-      color: #fff;
-      width: 100%;
-      padding: 10px 0;
-      margin: 0;
-      text-align: center;
-    }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
 
-    #app {
-      max-width: 800px;
-      width: 95%;
-      background: #fff;
-      margin: 20px auto;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }
 
-    #visual {
-      min-height: 220px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite;
+            margin-bottom: 10px;
+        }
 
-    /* Barras fraccionarias */
-    .bar {
-      display: flex;
-      width: 320px;
-      height: 40px;
-      border: 2px solid #444;
-      border-radius: 6px;
-      overflow: hidden;
-      margin: 6px 0;
-    }
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
 
-    .segment {
-      flex: 1 1 auto;
-      height: 100%;
-    }
+        /* Sistema de Estudiantes */
+        .student-login {
+            background: linear-gradient(145deg, #e8f4f8, #d1ecf1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 2px solid #4ecdc4;
+        }
 
-    /* Controles */
-    #controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
+        .student-selector {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-    button {
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      transition: transform 0.1s;
-    }
+        .student-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
 
-    button:active {
-      transform: scale(0.97);
-    }
+        .student-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
+        .student-btn.active {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
 
-    #explanation {
-      background: #eef6ff;
-      border-left: 6px solid var(--primary);
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-    }
+        .new-student-form {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+        }
 
-    #speedControl {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 12px;
-    }
+        .new-student-input {
+            padding: 10px 15px;
+            border: 2px solid #4ecdc4;
+            border-radius: 20px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+        }
 
-    input[type="range"] {
-      accent-color: var(--primary);
-    }
-  </style>
+        .new-student-input:focus {
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        }
+
+        .add-student-btn {
+            background: linear-gradient(45deg, #4caf50, #81c784);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .current-student-info {
+            background: linear-gradient(145deg, #fff3e0, #ffcc02);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .student-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+
+        .student-grade {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .grade-excelente {
+            background: linear-gradient(45deg, #4caf50, #81c784);
+            color: white;
+        }
+
+        .grade-bueno {
+            background: linear-gradient(45deg, #2196f3, #64b5f6);
+            color: white;
+        }
+
+        .grade-regular {
+            background: linear-gradient(45deg, #ff9800, #ffb74d);
+            color: white;
+        }
+
+        .grade-necesita-mejora {
+            background: linear-gradient(45deg, #f44336, #ef5350);
+            color: white;
+        }
+
+        /* Tabla de Rankings */
+        .rankings-card {
+            background: linear-gradient(145deg, #f3e5f5, #e1bee7);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .rankings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .rankings-table th,
+        .rankings-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .rankings-table th {
+            background: linear-gradient(45deg, #9c27b0, #e1bee7);
+            color: white;
+            font-weight: bold;
+        }
+
+        .rankings-table tr:hover {
+            background: rgba(156, 39, 176, 0.1);
+        }
+
+        .rank-medal {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #4ecdc4;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .operation-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn.active {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn-suma { background: linear-gradient(45deg, #ff6b6b, #ff8e8e); }
+        .btn-resta { background: linear-gradient(45deg, #ffa726, #ffcc02); }
+        .btn-multiplicacion { background: linear-gradient(45deg, #ab47bc, #e1bee7); }
+        .btn-division { background: linear-gradient(45deg, #42a5f5, #81c784); }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(45deg, #9c27b0, #e1bee7);
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .fraction-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .fraction-display {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .numerator, .denominator {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+
+        .numerator:focus, .denominator:focus {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+            outline: none;
+        }
+
+        .fraction-line {
+            width: 70px;
+            height: 3px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            margin: 2px 0;
+            border-radius: 2px;
+        }
+
+        .operation-symbol {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+
+        .equals {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .result-display {
+            background: linear-gradient(145deg, #e8f5e8, #f0fff0);
+            border: 3px solid #4caf50;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-fraction {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(45deg, #4caf50, #81c784);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        .score-display {
+            background: linear-gradient(145deg, #fff3e0, #ffcc02);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+
+        .level-display {
+            font-size: 1.2em;
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4caf50, #81c784);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .achievements {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .achievement {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            opacity: 0.3;
+        }
+
+        .achievement.unlocked {
+            opacity: 1;
+            animation: unlockAchievement 0.6s ease;
+        }
+
+        .achievement:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.5s ease;
+        }
+
+        .feedback.correct {
+            background: linear-gradient(145deg, #c8e6c9, #e8f5e8);
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+
+        .feedback.incorrect {
+            background: linear-gradient(145deg, #ffcdd2, #ffebee);
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+
+        .tips-card {
+            background: linear-gradient(145deg, #e3f2fd, #f3e5f5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .tip {
+            display: none;
+            font-size: 1em;
+            color: #5e35b1;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+
+        .tip.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .step-by-step {
+            background: linear-gradient(145deg, #fff8e1, #ffecb3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #f57c00;
+            display: none;
+        }
+
+        .step-by-step.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .step {
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 5px;
+        }
+
+        .sound-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #9c27b0, #e1bee7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(255, 204, 2, 0.3); }
+            to { box-shadow: 0 0 30px rgba(255, 204, 2, 0.6); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes unlockAchievement {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.3) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .fraction-input {
+                justify-content: center;
+            }
+
+            .student-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .rankings-table {
+                font-size: 0.9em;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>🟢 Sumando Fracciones Paso a Paso</h1>
-  <div id="app">
-    <div id="visual"></div>
+    <button class="sound-toggle" onclick="toggleSound()" title="Activar/Desactivar sonidos">🔊</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎯 ¡Aventura con Fracciones! 🎯</h1>
+            <p class="subtitle">¡Aprende matemáticas de forma divertida! 🌟</p>
+        </div>
 
-    <div id="explanation">Haz clic en <strong>"Nuevo problema"</strong> para comenzar.</div>
+        <!-- Sistema de Login de Estudiantes -->
+        <div class="student-login">
+            <h2>👨‍🎓 Selecciona tu perfil de estudiante</h2>
+            <div class="student-selector" id="studentSelector">
+                <!-- Los estudiantes se cargarán aquí -->
+            </div>
+            
+            <div class="new-student-form">
+                <input type="text" class="new-student-input" id="newStudentName" placeholder="Nombre del nuevo estudiante">
+                <button class="add-student-btn" onclick="addNewStudent()">➕ Agregar Estudiante</button>
+            </div>
+        </div>
 
-    <div id="controls">
-      <button id="newProblem">🔄 Nuevo problema</button>
-      <button id="prevStep" disabled>⏮️ Paso anterior</button>
-      <button id="nextStep" disabled>⏭️ Paso siguiente</button>
-      <button id="viewAll" disabled>▶️ Ver proceso completo</button>
+        <!-- Información del Estudiante Actual -->
+        <div class="current-student-info" id="currentStudentInfo" style="display: none;">
+            <div class="student-name" id="currentStudentName">Ana García</div>
+            <div>
+                <span class="student-grade" id="currentStudentGrade">Excelente</span>
+                <span id="currentStudentStats">Nivel 3 • 450 puntos • 95% precisión</span>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Calculadora de Fracciones -->
+            <div class="card">
+                <h2 class="card-title">🔢 Calculadora de Fracciones</h2>
+                
+                <div class="difficulty-selector">
+                    <button class="btn difficulty-btn active" onclick="setDifficulty('easy')">🟢 Fácil</button>
+                    <button class="btn difficulty-btn" onclick="setDifficulty('medium')">🟡 Medio</button>
+                    <button class="btn difficulty-btn" onclick="setDifficulty('hard')">🔴 Difícil</button>
+                </div>
+                
+                <div class="operation-buttons">
+                    <button class="btn btn-suma active" onclick="setOperation('+')">➕ Suma</button>
+                    <button class="btn btn-resta" onclick="setOperation('-')">➖ Resta</button>
+                    <button class="btn btn-multiplicacion" onclick="setOperation('*')">✖️ Multiplicar</button>
+                    <button class="btn btn-division" onclick="setOperation('/')"># Dividir</button>
+                </div>
+
+                <div class="fraction-input">
+                    <div class="fraction-display">
+                        <input type="number" class="numerator" id="num1" placeholder="2" value="2">
+                        <div class="fraction-line"></div>
+                        <input type="number" class="denominator" id="den1" placeholder="3" value="3">
+                    </div>
+                    
+                    <span class="operation-symbol" id="opSymbol">+</span>
+                    
+                    <div class="fraction-display">
+                        <input type="number" class="numerator" id="num2" placeholder="1" value="1">
+                        <div class="fraction-line"></div>
+                        <input type="number" class="denominator" id="den2" placeholder="4" value="4">
+                    </div>
+                    
+                    <span class="equals">=</span>
+                    
+                    <div class="fraction-display">
+                        <div class="numerator" id="resultNum" style="background: #e8f5e8; border-color: #4caf50;">?</div>
+                        <div class="fraction-line"></div>
+                        <div class="denominator" id="resultDen" style="background: #e8f5e8; border-color: #4caf50;">?</div>
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="calculateFraction()">
+                    🧮 ¡Calcular Resultado!
+                </button>
+
+                <button class="btn" onclick="generateRandomProblem()" style="width: 100%; margin-top: 10px;">
+                    🎲 Generar Problema Aleatorio
+                </button>
+
+                <div class="result-display" id="resultDisplay">
+                    <p>¡Ingresa los números y presiona calcular! 🚀</p>
+                </div>
+
+                <div class="step-by-step" id="stepByStep"></div>
+
+                <div class="feedback" id="feedback"></div>
+            </div>
+
+            <!-- Visualización -->
+            <div class="card">
+                <h2 class="card-title">📊 Visualización</h2>
+                
+                <div id="visualContainer">
+                    <p style="text-align: center; color: #666; margin: 40px 0;">
+                        🎨 Aquí verás las fracciones representadas visualmente
+                    </p>
+                </div>
+
+                <div class="tips-card">
+                    <h3 style="text-align: center; color: #5e35b1; margin-bottom: 15px;">💡 Consejos Matemáticos</h3>
+                    <div class="tip show" id="tip1">
+                        Para sumar fracciones, necesitas el mismo denominador. ¡Es como juntar piezas del mismo tamaño!
+                    </div>
+                    <div class="tip" id="tip2">
+                        Multiplicar fracciones es fácil: multiplica numerador con numerador y denominador con denominador.
+                    </div>
+                    <div class="tip" id="tip3">
+                        Para dividir fracciones, multiplica por el inverso de la segunda fracción. ¡Dale la vuelta!
+                    </div>
+                    <div class="tip" id="tip4">
+                        Siempre simplifica tus fracciones dividiendo numerador y denominador por su máximo común divisor.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progreso del Estudiante -->
+            <div class="card score-display">
+                <h2 class="card-title">🌟 Tu Progreso</h2>
+                <div class="level-display" id="levelDisplay">Selecciona un estudiante</div>
+                <div class="score" id="score">0</div>
+                <p>¡Puntos ganados!</p>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">Inicia sesión para ver tu progreso</p>
+                
+                <div class="achievements">
+                    <div class="achievement" id="achievement1" title="Primera operación">🥇</div>
+                    <div class="achievement" id="achievement2" title="5 operaciones correctas">🎯</div>
+                    <div class="achievement" id="achievement3" title="10 operaciones correctas">🏆</div>
+                    <div class="achievement" id="achievement4" title="¡Experto en fracciones!">⭐</div>
+                    <div class="achievement" id="achievement5" title="¡Matemático estrella!">👑</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Rankings de Estudiantes -->
+            <div class="card rankings-card">
+                <h2 class="card-title">🏅 Ranking de Estudiantes</h2>
+                <table class="rankings-table">
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Estudiante</th>
+                            <th>Nivel</th>
+                            <th>Puntos</th>
+                            <th>Calificación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingsTableBody">
+                        <!-- Se llenará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Desafío Rápido -->
+            <div class="card">
+                <h2 class="card-title">🎮 Desafío Rápido</h2>
+                <div id="challengeContainer">
+                    <p style="text-align: center; font-size: 1.2em; margin: 20px 0;">
+                        <strong id="challengeQuestion">¿Cuánto es 1/2 + 1/4?</strong>
+                    </p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn" onclick="checkChallenge('3/4')">3/4</button>
+                        <button class="btn" onclick="checkChallenge('2/6')">2/6</button>
+                        <button class="btn" onclick="checkChallenge('1/8')">1/8</button>
+                        <button class="btn" onclick="checkChallenge('5/8')">5/8</button>
+                    </div>
+                    <div id="challengeFeedback" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
+                </div>
+            </div>
+
+            <!-- Estadísticas Detalladas -->
+            <div class="card">
+                <h2 class="card-title">📈 Estadísticas Detalladas</h2>
+                <div id="detailedStats">
+                    <p style="text-align: center; color: #666;">Selecciona un estudiante para ver estadísticas detalladas</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="speedControl">
-      <label for="speed">Velocidad animación</label>
-      <input type="range" id="speed" min="0.5" max="2" step="0.25" value="1" />
-    </div>
-  </div>
+    <script>
+        // Variables globales
+        let currentOperation = '+';
+        let currentDifficulty = 'easy';
+        let soundEnabled = true;
+        let currentStudent = null;
 
-  <script>
-    const visual = document.getElementById("visual");
-    const explanation = document.getElementById("explanation");
-    const btnNew = document.getElementById("newProblem");
-    const btnPrev = document.getElementById("prevStep");
-    const btnNext = document.getElementById("nextStep");
-    const btnView = document.getElementById("viewAll");
-    const speedSlider = document.getElementById("speed");
-
-    let problem = {};
-    let step = 0;
-    const MAX_STEP = 5;
-
-    const colors = ["var(--bar-color1)", "var(--bar-color2)"];
-
-    function gcd(a, b) {
-      return b === 0 ? a : gcd(b, a % b);
-    }
-
-    function lcm(a, b) {
-      return (a * b) / gcd(a, b);
-    }
-
-    function randInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function createBar(numerator, denominator, color) {
-      const bar = document.createElement("div");
-      bar.className = "bar";
-      for (let i = 0; i < denominator; i++) {
-        const seg = document.createElement("div");
-        seg.className = "segment";
-        seg.style.background = i < numerator ? color : "#eee";
-        bar.appendChild(seg);
-      }
-      return bar;
-    }
-
-    function generateProblem() {
-      let denom1, denom2, num1, num2;
-      do {
-        denom1 = randInt(2, 9);
-        denom2 = randInt(2, 9);
-      } while (denom1 === denom2);
-      num1 = randInt(1, denom1 - 1);
-      num2 = randInt(1, denom2 - 1);
-      problem = {
-        num1,
-        denom1,
-        num2,
-        denom2,
-        lcd: lcm(denom1, denom2),
-      };
-      problem.eqNum1 = (problem.lcd / denom1) * num1;
-      problem.eqNum2 = (problem.lcd / denom2) * num2;
-      problem.sumNum = problem.eqNum1 + problem.eqNum2;
-      const simpl = gcd(problem.sumNum, problem.lcd);
-      problem.simpNum = problem.sumNum / simpl;
-      problem.simpDen = problem.lcd / simpl;
-      step = 0;
-      updateButtons();
-      render();
-    }
-
-    function updateButtons() {
-      btnPrev.disabled = step === 0;
-      btnNext.disabled = step >= MAX_STEP;
-      btnView.disabled = step >= MAX_STEP;
-    }
-
-    function render() {
-      visual.innerHTML = "";
-      let colorSum = "var(--bar-sum)";
-
-      switch (step) {
-        case 0: // Paso 1: mostrar fracciones originales
-          explanation.innerHTML =
-            `<strong>Paso 1:</strong> Observa las fracciones originales.`;
-          visual.appendChild(createBar(problem.num1, problem.denom1, colors[0]));
-          visual.appendChild(createBar(problem.num2, problem.denom2, colors[1]));
-          break;
-
-        case 1: // Paso 2: encontrar denominador común
-          explanation.innerHTML =
-            `<strong>Paso 2:</strong> Buscamos el denominador común mínimo (m.c.m) de ${problem.denom1} y ${problem.denom2}: <strong>${problem.lcd}</strong>.`;
-          visual.appendChild(createBar(problem.num1, problem.denom1, colors[0]));
-          visual.appendChild(createBar(problem.num2, problem.denom2, colors[1]));
-          break;
-
-        case 2: // Paso 3: convertir a denominador común
-          explanation.innerHTML =
-            `<strong>Paso 3:</strong> Convertimos a denominador común.<br>` +
-            `${problem.num1}/${problem.denom1} → ${problem.eqNum1}/${problem.lcd}<br>` +
-            `${problem.num2}/${problem.denom2} → ${problem.eqNum2}/${problem.lcd}`;
-          visual.appendChild(createBar(problem.eqNum1, problem.lcd, colors[0]));
-          visual.appendChild(createBar(problem.eqNum2, problem.lcd, colors[1]));
-          break;
-
-        case 3: // Paso 4: sumar numeradores
-          explanation.innerHTML =
-            `<strong>Paso 4:</strong> Sumamos los numeradores y mantenemos el denominador:<br>` +
-            `${problem.eqNum1} + ${problem.eqNum2} = <strong>${problem.sumNum}</strong><br>` +
-            `Resultado provisional: ${problem.sumNum}/${problem.lcd}`;
-          visual.appendChild(createBar(problem.sumNum, problem.lcd, colorSum));
-          break;
-
-        case 4: // Paso 5: simplificar
-          explanation.innerHTML =
-            `<strong>Paso 5:</strong> Simplificamos la fracción.<br>` +
-            `Dividimos numerador y denominador entre su MCD (${gcd(problem.sumNum, problem.lcd)}).<br>` +
-            `Resultado final: <span style="font-size:1.3rem; color:var(--primary);">${problem.simpNum}/${problem.simpDen}</span>`;
-          visual.appendChild(createBar(problem.simpNum, problem.simpDen, colorSum));
-          break;
-
-        case 5: // Feedback
-          explanation.innerHTML =
-            `✅ <strong>¡Excelente!</strong> Has completado el proceso. ¡Sigue practicando!`;
-          visual.appendChild(createBar(problem.simpNum, problem.simpDen, colorSum));
-          break;
-
-        default:
-          break;
-      }
-      updateButtons();
-    }
-
-    btnNew.addEventListener("click", () => {
-      generateProblem();
-      btnNext.disabled = false;
-      btnView.disabled = false;
-    });
-
-    btnNext.addEventListener("click", () => {
-      if (step < MAX_STEP) {
-        step++;
-        render();
-      }
-    });
-
-    btnPrev.addEventListener("click", () => {
-      if (step > 0) {
-        step--;
-        render();
-      }
-    });
-
-    function playStepsFast(current) {
-      if (current > MAX_STEP) return;
-      step = current;
-      render();
-      if (current < MAX_STEP) {
-        setTimeout(
-          () => playStepsFast(current + 1),
-          1200 / parseFloat(speedSlider.value)
-        );
-      }
-    }
-
-    btnView.addEventListener("click", () => {
-      playStepsFast(step + 1);
-    });
-
-    speedSlider.addEventListener("input", () => {
-      // Speed affects animations only when playing all
-    });
-  </script>
-</body>
-</html>
+        // Sistema de estudiantes
+        let students = {
+            'ana': { 
+                name: 'Ana García', 
+                level: 3, 
+                score: 450, 
+                xp: 75, 
+                correctAnswers: 23, 
+                totalAnswers: 25, 
+                achievements: ['🥇', '🎯', '🏆'],
+                operationsStats: {
+                    suma: { correct: 8, total: 10 },
+                    resta: { correct: 7, total: 8 },
+                    multiplicacion: { correct: 5, total: 5 },
+                    division: { correct: 3, total: 2 }
+                }
+            },
+            'carlos': { 
+                name: 'Carlos Mendoza', 
+                level: 2, 
+                score: 320, 
+                xp: 45, 
+                correctAnswers: 18, 
+                totalAnswers: 22, 
+                achievements: ['🥇', '🎯'],
+                operationsStats: {
+                    suma: { correct: 6, total: 8 },
+                    resta: { correct: 5, total: 7 },
+                    multiplicacion: { correct: 4, total: 5 },
+                    division: { correct: 3, total: 2 }
+                }
+            },
+            'maria': { 
+                name: 'María López', 
+                level: 4, 
+                score: 580, 
+                xp: 30, 
+                correctAnswers: 31, 
+                totalAnswers: 35, 
+                achievements: ['🥇', '🎯', '🏆', '⭐
